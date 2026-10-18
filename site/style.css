@@ -5,10 +5,10 @@ main { max-width: 680px; margin: 0 auto; padding: 48px 16px; }
 h1 { color: var(--ink); margin: 0 0 8px; font-size: 2.2rem; }
 h2 { margin: 40px 0 12px; }
 .lead { color: var(--ink); }
-.hero { position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 24px; background: var(--oat); min-height: 100vh; min-height: 100svh; display: flex; align-items: center; }
-/* Each layer is taller than the hero (150px extra top and bottom) so its edges stay covered while it moves.
+.hero { position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 24px; background: var(--oat); min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; }
+/* Each layer is taller than the hero (half the hero height extra top and bottom) so its edges stay covered while it moves.
    Solid shapes and stripes give the eye edges to track. */
-.layer { position: absolute; top: -150px; bottom: -150px; left: 0; right: 0; will-change: transform; }
+.layer { position: absolute; top: -50%; bottom: -50%; left: 0; right: 0; will-change: transform; }
 .layer-shapes {
   background:
     radial-gradient(circle at 82% 30%, var(--terracotta) 0 110px, transparent 111px),
@@ -19,7 +19,7 @@ h2 { margin: 40px 0 12px; }
   background:
     repeating-linear-gradient(90deg, rgba(20, 20, 19, 0.16) 0 6px, transparent 6px 56px),
     repeating-linear-gradient(0deg, rgba(217, 119, 87, 0.5) 0 8px, transparent 8px 120px); }
-.hero-text { position: relative; padding: 24px 32px; will-change: transform; }
+.hero-text { position: relative; margin: 0 16px; padding: 24px 32px; border-radius: 12px; background: rgba(240, 238, 230, 0.94); will-change: transform; }
 .cta { display: inline-block; margin-top: 4px; padding: 10px 18px; border-radius: 6px; background: var(--terracotta); color: var(--ink); text-decoration: none; font-weight: 600; }
 .cta:hover, .cta:focus-visible { background: var(--ink); color: var(--paper); }
 .cta:focus-visible { outline: 3px solid var(--terracotta); outline-offset: 3px; }

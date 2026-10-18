@@ -9,7 +9,7 @@ export const PARALLAX_RANGE = 300;
 /** How fast each hero layer moves, as a share of the scroll distance: shapes slowest, hero content fastest. */
 export const SPEED_SHAPES = 0.15;
 export const SPEED_STRIPES = 0.4;
-export const SPEED_CONTENT = 0.8;
+export const SPEED_CONTENT = 0.5;
 
 /**
  * Signed, centered offset in pixels for a layer. It runs from -max/2 at scroll 0 to +max/2
@@ -19,6 +19,12 @@ export function parallaxOffset(scrollY, speed, range = PARALLAX_RANGE) {
   const y = Number(scrollY);
   if (!Number.isFinite(y)) return 0;
   return speed * (Math.min(range, Math.max(0, y)) - range / 2);
+}
+
+/** Scroll distance over which the hero is on screen: its bottom edge in page coordinates. Falls back to the fixed range. */
+export function heroRange(scrollY, heroBottom) {
+  const range = Number(scrollY) + Number(heroBottom);
+  return Number.isFinite(range) && range > 0 ? range : PARALLAX_RANGE;
 }
 
 /**
@@ -31,12 +37,14 @@ export function initParallax(win, doc) {
     [doc.querySelector(".layer-stripes"), SPEED_STRIPES],
     [doc.querySelector(".hero-text"), SPEED_CONTENT],
   ].filter(([el]) => el);
+  const hero = doc.querySelector(".hero");
   const query = win.matchMedia("(prefers-reduced-motion: reduce)");
   let waiting = false;
   let frame = 0;
   const update = () => {
     waiting = false;
-    for (const [el, speed] of layers) el.style.transform = `translate3d(0, ${parallaxOffset(win.scrollY, speed)}px, 0)`;
+    const range = hero ? heroRange(win.scrollY, hero.getBoundingClientRect().bottom) : PARALLAX_RANGE;
+    for (const [el, speed] of layers) el.style.transform = `translate3d(0, ${parallaxOffset(win.scrollY, speed, range)}px, 0)`;
   };
   const onScroll = () => {
     if (!waiting) { waiting = true; frame = win.requestAnimationFrame(update); }
@@ -59,6 +67,7 @@ export function initParallax(win, doc) {
 
 /** What has changed on this page, newest first. Workers add a line here with each change. */
 export const changes = [
+  "The hero text stays visible and the layers keep moving for as long as the hero is on screen.",
   "A real parallax with three layers: big shapes, stripes and the hero text move at their own speeds from the first pixel of scroll.",
   "A stronger parallax with a patterned hero, more content so the page scrolls, and the Anthropic colors.",
   "The hero now stops its parallax when reduced motion is turned on, even while the page is open.",
