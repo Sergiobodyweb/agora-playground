@@ -1,14 +1,31 @@
-:root { --ink: #1d211c; --muted: #5b6358; --paper: #ffffff; --olive: #56632a; }
+:root { --ink: #141413; --muted: #5e5d59; --paper: #f0eee6; --oat: #e3dacc; --kraft: #d4a27f; --terracotta: #d97757; }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.55 system-ui, sans-serif; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.6 system-ui, sans-serif; }
 main { max-width: 680px; margin: 0 auto; padding: 48px 16px; }
-h1 { color: var(--olive); margin: 0 0 8px; }
-.lead { color: var(--muted); }
-.hero { position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 24px; background: #eef1e0; }
-.hero-bg { position: absolute; top: -60px; left: 0; right: 0; bottom: 0; will-change: transform;
-  background: radial-gradient(circle at 85% 30%, rgba(86, 99, 42, 0.22) 0 90px, transparent 91px), linear-gradient(135deg, #f4f6e8, #dfe5c3); }
-.hero-text { position: relative; padding: 32px 24px; }
-/* Hero text sits on the pale green background, so use the darkest ink for body text (about 12 to 1 contrast). */
-.hero .lead { color: var(--ink); }
-.cta { display: inline-block; margin-top: 4px; padding: 8px 16px; border-radius: 6px; background: var(--olive); color: #ffffff; text-decoration: none; font-weight: 600; }
-.cta:hover, .cta:focus-visible { background: var(--ink); }
+h1 { color: var(--ink); margin: 0 0 8px; font-size: 2.2rem; }
+h2 { margin: 40px 0 12px; }
+.lead { color: var(--ink); }
+.hero { position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 24px; background: var(--oat); min-height: 420px; display: flex; align-items: flex-end; }
+/* The moving layer is taller than the hero by the parallax cap (160px), so its edges stay covered.
+   It holds hard edged shapes and stripes, so the shift is easy to see. */
+.hero-bg { position: absolute; top: -160px; left: 0; right: 0; bottom: 0; will-change: transform;
+  background:
+    radial-gradient(circle at 80% 38%, var(--terracotta) 0 70px, transparent 71px),
+    radial-gradient(circle at 18% 60%, var(--kraft) 0 44px, transparent 45px),
+    repeating-linear-gradient(90deg, rgba(20, 20, 19, 0.1) 0 3px, transparent 3px 48px),
+    repeating-linear-gradient(0deg, rgba(20, 20, 19, 0.1) 0 3px, transparent 3px 48px),
+    var(--oat); }
+.hero-text { position: relative; margin: 0 16px 16px; padding: 24px; border-radius: 8px; background: var(--paper); }
+.cta { display: inline-block; margin-top: 4px; padding: 10px 18px; border-radius: 6px; background: var(--terracotta); color: var(--ink); text-decoration: none; font-weight: 600; }
+.cta:hover, .cta:focus-visible { background: var(--ink); color: var(--paper); }
+.cta:focus-visible { outline: 3px solid var(--terracotta); outline-offset: 3px; }
+.cards { display: grid; gap: 16px; margin: 0 0 24px; }
+.card { padding: 20px 24px; border-radius: 12px; background: var(--oat); border-left: 6px solid var(--terracotta); min-height: 140px; }
+.card h3 { margin: 0 0 6px; }
+.card p { margin: 0; color: var(--ink); }
+#greeting { color: var(--muted); }
+#changes { padding-left: 1.2em; }
+#changes li { margin-bottom: 8px; }
+#changes li::marker { color: var(--terracotta); }
+.note { margin-top: 48px; padding: 24px; border-radius: 12px; background: var(--ink); color: var(--paper); min-height: 160px; }
+.note h2 { margin-top: 0; }

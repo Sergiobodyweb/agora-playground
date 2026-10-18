@@ -4,10 +4,13 @@ export function greeting(name) {
 }
 
 /** Largest parallax shift in pixels. The background layer is taller by this much, so edges stay covered. */
-export const PARALLAX_MAX = 60;
+export const PARALLAX_MAX = 160;
 
-/** How far to move the hero background for a scroll position: a small factor, clamped to 0 and max. */
-export function parallaxOffset(scrollY, factor = 0.2, max = PARALLAX_MAX) {
+/** Share of the scroll distance the hero background moves by. */
+export const PARALLAX_FACTOR = 0.5;
+
+/** How far to move the hero background for a scroll position: a factor, clamped to 0 and max. */
+export function parallaxOffset(scrollY, factor = PARALLAX_FACTOR, max = PARALLAX_MAX) {
   const y = Number(scrollY);
   if (!Number.isFinite(y)) return 0;
   return Math.min(max, Math.max(0, y * factor));
@@ -15,6 +18,7 @@ export function parallaxOffset(scrollY, factor = 0.2, max = PARALLAX_MAX) {
 
 /** What has changed on this page, newest first. Workers add a line here with each change. */
 export const changes = [
+  "A stronger parallax with a patterned hero, more content so the page scrolls, and the Anthropic colors.",
   "The hero now stops its parallax when reduced motion is turned on, even while the page is open.",
   "A short hero with a link to this list and a gentle parallax background.",
   "The page was created.",
