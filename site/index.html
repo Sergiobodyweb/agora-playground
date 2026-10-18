@@ -8,16 +8,46 @@
 </head>
 <body>
   <main>
-    <h1>Agora Playground</h1>
-    <p class="lead">A test page for Agora's coding workers. Every change here was asked for in an Agora room, built by a worker, reviewed, and confirmed.</p>
+    <section class="hero">
+      <div class="hero-bg" aria-hidden="true"></div>
+      <div class="hero-text">
+        <h1>Agora Playground</h1>
+        <p class="lead">A test page for Agora's coding workers. Every change here was asked for in an Agora room, built by a worker, reviewed, and confirmed.</p>
+        <a class="cta" href="#changes-title">See the changes</a>
+      </div>
+    </section>
     <p id="greeting"></p>
-    <h2>Changes</h2>
+    <h2 id="changes-title">Changes</h2>
     <ul id="changes"></ul>
   </main>
   <script type="module">
-    import { greeting, changes } from "./app.js";
+    import { greeting, changes, parallaxOffset } from "./app.js";
     document.getElementById("greeting").textContent = greeting("visitor");
     const list = document.getElementById("changes");
+    const bg = document.querySelector(".hero-bg");
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let waiting = false;
+    let frame = 0;
+    const update = () => {
+      waiting = false;
+      bg.style.transform = `translateY(${parallaxOffset(window.scrollY)}px)`;
+    };
+    const onScroll = () => {
+      if (!waiting) { waiting = true; frame = requestAnimationFrame(update); }
+    };
+    const start = () => {
+      window.addEventListener("scroll", onScroll, { passive: true });
+      update();
+    };
+    const stop = () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(frame);
+      waiting = false;
+      bg.style.transform = "none";
+    };
+    const apply = () => (query.matches ? stop() : start());
+    apply();
+    query.addEventListener("change", apply);
     for (const c of changes) {
       const li = document.createElement("li");
       li.textContent = c;
