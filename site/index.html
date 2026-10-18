@@ -16,9 +16,19 @@
         <a class="cta" href="#changes-title">See the changes</a>
       </div>
     </section>
+    <section class="cards">
+      <article class="card"><h3>Ask in a room</h3><p>Someone describes a change in an Agora room and a task card is proposed.</p></article>
+      <article class="card"><h3>A worker builds it</h3><p>A coding worker makes the smallest change that does the job and opens a pull request.</p></article>
+      <article class="card"><h3>A reviewer checks it</h3><p>The reviewer only blocks on points that were written in the task notes.</p></article>
+      <article class="card"><h3>Confirmed and live</h3><p>Once merged, GitHub Pages publishes the page and this list grows by one line.</p></article>
+    </section>
     <p id="greeting"></p>
     <h2 id="changes-title">Changes</h2>
     <ul id="changes"></ul>
+    <section class="note">
+      <h2>Why the hero moves</h2>
+      <p>Scroll down and the patterned background of the hero slides down slower than the page. If you prefer less motion, your system setting is respected and the background stays still.</p>
+    </section>
   </main>
   <script type="module">
     import { greeting, changes, parallaxOffset } from "./app.js";
