@@ -3,21 +3,63 @@ export function greeting(name) {
   return `Hello, ${name}. Welcome to the Agora Playground.`;
 }
 
-/** Largest parallax shift in pixels. The background layer is taller by this much, so edges stay covered. */
-export const PARALLAX_MAX = 160;
+/** Scroll distance in pixels over which the layers travel from their first to their last position. */
+export const PARALLAX_RANGE = 300;
 
-/** Share of the scroll distance the hero background moves by. */
-export const PARALLAX_FACTOR = 0.5;
+/** How fast each hero layer moves, as a share of the scroll distance: shapes slowest, hero content fastest. */
+export const SPEED_SHAPES = 0.15;
+export const SPEED_STRIPES = 0.4;
+export const SPEED_CONTENT = 0.8;
 
-/** How far to move the hero background for a scroll position: a factor, clamped to 0 and max. */
-export function parallaxOffset(scrollY, factor = PARALLAX_FACTOR, max = PARALLAX_MAX) {
+/**
+ * Signed, centered offset in pixels for a layer. It runs from -max/2 at scroll 0 to +max/2
+ * at the end of the range, where max is speed times range, so it moves from the first pixel.
+ */
+export function parallaxOffset(scrollY, speed, range = PARALLAX_RANGE) {
   const y = Number(scrollY);
   if (!Number.isFinite(y)) return 0;
-  return Math.min(max, Math.max(0, y * factor));
+  return speed * (Math.min(range, Math.max(0, y)) - range / 2);
+}
+
+/**
+ * Starts the hero parallax on a window and document. Honors reduced motion on load and on change.
+ * Returns a function that stops it and resets the transforms.
+ */
+export function initParallax(win, doc) {
+  const layers = [
+    [doc.querySelector(".layer-shapes"), SPEED_SHAPES],
+    [doc.querySelector(".layer-stripes"), SPEED_STRIPES],
+    [doc.querySelector(".hero-text"), SPEED_CONTENT],
+  ].filter(([el]) => el);
+  const query = win.matchMedia("(prefers-reduced-motion: reduce)");
+  let waiting = false;
+  let frame = 0;
+  const update = () => {
+    waiting = false;
+    for (const [el, speed] of layers) el.style.transform = `translate3d(0, ${parallaxOffset(win.scrollY, speed)}px, 0)`;
+  };
+  const onScroll = () => {
+    if (!waiting) { waiting = true; frame = win.requestAnimationFrame(update); }
+  };
+  const stop = () => {
+    win.removeEventListener("scroll", onScroll);
+    win.cancelAnimationFrame(frame);
+    waiting = false;
+    for (const [el] of layers) el.style.transform = "none";
+  };
+  const apply = () => {
+    if (query.matches) { stop(); return; }
+    win.addEventListener("scroll", onScroll, { passive: true });
+    update();
+  };
+  apply();
+  query.addEventListener("change", apply);
+  return () => { query.removeEventListener("change", apply); stop(); };
 }
 
 /** What has changed on this page, newest first. Workers add a line here with each change. */
 export const changes = [
+  "A real parallax with three layers: big shapes, stripes and the hero text move at their own speeds from the first pixel of scroll.",
   "A stronger parallax with a patterned hero, more content so the page scrolls, and the Anthropic colors.",
   "The hero now stops its parallax when reduced motion is turned on, even while the page is open.",
   "A short hero with a link to this list and a gentle parallax background.",

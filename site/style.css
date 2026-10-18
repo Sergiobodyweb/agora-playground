@@ -5,17 +5,21 @@ main { max-width: 680px; margin: 0 auto; padding: 48px 16px; }
 h1 { color: var(--ink); margin: 0 0 8px; font-size: 2.2rem; }
 h2 { margin: 40px 0 12px; }
 .lead { color: var(--ink); }
-.hero { position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 24px; background: var(--oat); min-height: 420px; display: flex; align-items: flex-end; }
-/* The moving layer is taller than the hero by the parallax cap (160px), so its edges stay covered.
-   It holds hard edged shapes and stripes, so the shift is easy to see. */
-.hero-bg { position: absolute; top: -160px; left: 0; right: 0; bottom: 0; will-change: transform;
+.hero { position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 24px; background: var(--oat); min-height: 100vh; min-height: 100svh; display: flex; align-items: center; }
+/* Each layer is taller than the hero (150px extra top and bottom) so its edges stay covered while it moves.
+   Solid shapes and stripes give the eye edges to track. */
+.layer { position: absolute; top: -150px; bottom: -150px; left: 0; right: 0; will-change: transform; }
+.layer-shapes {
   background:
-    radial-gradient(circle at 80% 38%, var(--terracotta) 0 70px, transparent 71px),
-    radial-gradient(circle at 18% 60%, var(--kraft) 0 44px, transparent 45px),
-    repeating-linear-gradient(90deg, rgba(20, 20, 19, 0.1) 0 3px, transparent 3px 48px),
-    repeating-linear-gradient(0deg, rgba(20, 20, 19, 0.1) 0 3px, transparent 3px 48px),
-    var(--oat); }
-.hero-text { position: relative; margin: 0 16px 16px; padding: 24px; border-radius: 8px; background: var(--paper); }
+    radial-gradient(circle at 82% 30%, var(--terracotta) 0 110px, transparent 111px),
+    radial-gradient(circle at 12% 62%, var(--kraft) 0 80px, transparent 81px),
+    radial-gradient(circle at 70% 80%, var(--paper) 0 60px, transparent 61px),
+    linear-gradient(90deg, transparent 0 55%, var(--kraft) 55% 63%, transparent 63%); }
+.layer-stripes {
+  background:
+    repeating-linear-gradient(90deg, rgba(20, 20, 19, 0.16) 0 6px, transparent 6px 56px),
+    repeating-linear-gradient(0deg, rgba(217, 119, 87, 0.5) 0 8px, transparent 8px 120px); }
+.hero-text { position: relative; padding: 24px 32px; will-change: transform; }
 .cta { display: inline-block; margin-top: 4px; padding: 10px 18px; border-radius: 6px; background: var(--terracotta); color: var(--ink); text-decoration: none; font-weight: 600; }
 .cta:hover, .cta:focus-visible { background: var(--ink); color: var(--paper); }
 .cta:focus-visible { outline: 3px solid var(--terracotta); outline-offset: 3px; }
