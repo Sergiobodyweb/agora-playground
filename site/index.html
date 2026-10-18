@@ -9,7 +9,8 @@
 <body>
   <main>
     <section class="hero">
-      <div class="hero-bg" aria-hidden="true"></div>
+      <div class="layer layer-shapes" aria-hidden="true"></div>
+      <div class="layer layer-stripes" aria-hidden="true"></div>
       <div class="hero-text">
         <h1>Agora Playground</h1>
         <p class="lead">A test page for Agora's coding workers. Every change here was asked for in an Agora room, built by a worker, reviewed, and confirmed.</p>
@@ -27,37 +28,14 @@
     <ul id="changes"></ul>
     <section class="note">
       <h2>Why the hero moves</h2>
-      <p>Scroll down and the patterned background of the hero slides down slower than the page. If you prefer less motion, your system setting is respected and the background stays still.</p>
+      <p>Scroll down and the big shapes, the stripes and the hero text move at three different speeds. If you prefer less motion, your system setting is respected and all three layers stay still.</p>
     </section>
   </main>
   <script type="module">
-    import { greeting, changes, parallaxOffset } from "./app.js";
+    import { greeting, changes, initParallax } from "./app.js";
     document.getElementById("greeting").textContent = greeting("visitor");
     const list = document.getElementById("changes");
-    const bg = document.querySelector(".hero-bg");
-    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let waiting = false;
-    let frame = 0;
-    const update = () => {
-      waiting = false;
-      bg.style.transform = `translateY(${parallaxOffset(window.scrollY)}px)`;
-    };
-    const onScroll = () => {
-      if (!waiting) { waiting = true; frame = requestAnimationFrame(update); }
-    };
-    const start = () => {
-      window.addEventListener("scroll", onScroll, { passive: true });
-      update();
-    };
-    const stop = () => {
-      window.removeEventListener("scroll", onScroll);
-      cancelAnimationFrame(frame);
-      waiting = false;
-      bg.style.transform = "none";
-    };
-    const apply = () => (query.matches ? stop() : start());
-    apply();
-    query.addEventListener("change", apply);
+    initParallax(window, document);
     for (const c of changes) {
       const li = document.createElement("li");
       li.textContent = c;
