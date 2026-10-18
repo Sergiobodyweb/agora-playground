@@ -1,0 +1,47 @@
+# Agora coding worker (plan.md section 9, Phase 6). Copy to .github/workflows/agora-worker.yml
+# in a project's repo; it needs the repo secret CLAUDE_CODE_OAUTH_TOKEN (Sergio's Max plan token,
+# from `claude setup-token`). Agora starts it for one approved task, Claude Code works on the
+# task's branch in this GitHub runner (file and git tools only), and this workflow pushes the
+# branch. Agora then opens the pull request, has it reviewed, and merges only after Sergio confirms.
+name: Agora worker
+run-name: "Agora task ${{ inputs.task_id }}"
+on:
+  workflow_dispatch:
+    inputs:
+      task_id: { description: "Agora task id", required: true, type: string }
+      branch: { description: "Branch to work on", required: true, type: string }
+      prompt: { description: "The task, written by Agora", required: true, type: string }
+permissions:
+  contents: write
+concurrency:
+  group: agora-${{ inputs.branch }}
+  cancel-in-progress: false
+jobs:
+  work:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check the branch name
+        env: { BRANCH: "${{ inputs.branch }}" }
+        run: '[[ "$BRANCH" =~ ^agora/task-[0-9a-f]{8}$ ]] || { echo "bad branch name"; exit 1; }'
+      - uses: actions/checkout@v5
+        with: { fetch-depth: 0 }
+      - name: Switch to the task's branch
+        env: { BRANCH: "${{ inputs.branch }}" }
+        run: |
+          git config user.name "Agora worker"
+          git config user.email "agora-worker@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then git switch "$BRANCH"; else git switch -c "$BRANCH"; fi
+      - uses: anthropics/claude-code-action@v1.0.252
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ github.token }}
+          prompt: ${{ inputs.prompt }}
+          claude_args: >-
+            --max-turns 40
+            --allowedTools "Read,Write,Edit,MultiEdit,Glob,Grep,LS,Bash(git status:*),Bash(git diff:*),Bash(git add:*),Bash(git commit:*),Bash(git log:*),Bash(npm ci:*),Bash(npm test:*),Bash(npm run test:*),Bash(npm run build:*),Bash(node --test:*)"
+      - name: Push the branch
+        env: { BRANCH: "${{ inputs.branch }}" }
+        run: |
+          base="origin/${{ github.event.repository.default_branch }}"
+          if [ -n "$(git log --oneline "$base"..HEAD)" ]; then git push -u origin HEAD; else echo "no changes"; fi

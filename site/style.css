@@ -1,0 +1,6 @@
+:root { --ink: #1d211c; --muted: #5b6358; --paper: #ffffff; --olive: #56632a; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.55 system-ui, sans-serif; }
+main { max-width: 680px; margin: 0 auto; padding: 48px 16px; }
+h1 { color: var(--olive); margin: 0 0 8px; }
+.lead { color: var(--muted); }

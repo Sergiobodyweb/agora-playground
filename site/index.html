@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agora Playground</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>Agora Playground</h1>
+    <p class="lead">A test page for Agora's coding workers. Every change here was asked for in an Agora room, built by a worker, reviewed, and confirmed.</p>
+    <p id="greeting"></p>
+    <h2>Changes</h2>
+    <ul id="changes"></ul>
+  </main>
+  <script type="module">
+    import { greeting, changes } from "./app.js";
+    document.getElementById("greeting").textContent = greeting("visitor");
+    const list = document.getElementById("changes");
+    for (const c of changes) {
+      const li = document.createElement("li");
+      li.textContent = c;
+      list.append(li);
+    }
+  </script>
+</body>
+</html>
