@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { changes, greeting, parallaxOffset, initParallax, PARALLAX_RANGE, SPEED_SHAPES, SPEED_STRIPES, SPEED_CONTENT } from "../site/app.js";
+import { changes, greeting, parallaxOffset, heroRange, initParallax, PARALLAX_RANGE, SPEED_SHAPES, SPEED_STRIPES, SPEED_CONTENT } from "../site/app.js";
 
 test("layer speeds rise from shapes to stripes to content", () => {
   assert.ok(SPEED_SHAPES < SPEED_STRIPES && SPEED_STRIPES < SPEED_CONTENT);
@@ -20,6 +20,15 @@ test("parallax offset is signed, centered and clamped", () => {
 test("fastest layer shifts at least 30px against the slowest in the first 100px", () => {
   const rel = (y) => parallaxOffset(y, SPEED_CONTENT) - parallaxOffset(y, SPEED_SHAPES);
   assert.ok(Math.abs(rel(100) - rel(0)) >= 30);
+});
+
+test("range follows the hero so layers move until it leaves the screen", () => {
+  assert.equal(heroRange(0, 748), 748);
+  assert.equal(heroRange(100, 648), 748);
+  assert.equal(heroRange(0, 0), PARALLAX_RANGE);
+  assert.equal(heroRange(NaN, 700), PARALLAX_RANGE);
+  const range = heroRange(0, 748);
+  assert.ok(parallaxOffset(740, SPEED_STRIPES, range) > parallaxOffset(600, SPEED_STRIPES, range));
 });
 
 test("initParallax moves layers, honors reduced motion on load and change, and cleans up", () => {
