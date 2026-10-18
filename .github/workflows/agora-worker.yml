@@ -36,6 +36,8 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ github.token }}
+          # Agora's GitHub App starts this workflow; the action refuses bots unless they are listed.
+          allowed_bots: "agora-solutionsguru"
           prompt: ${{ inputs.prompt }}
           claude_args: >-
             --max-turns 40
