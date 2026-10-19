@@ -1,8 +1,14 @@
 # Agora coding worker (plan.md section 9, Phase 6). Copy to .github/workflows/agora-worker.yml
 # in a project's repo; it needs the repo secret CLAUDE_CODE_OAUTH_TOKEN (Sergio's Max plan token,
-# from `claude setup-token`). Agora starts it for one approved task, Claude Code works on the
-# task's branch in this GitHub runner (file and git tools only), and this workflow pushes the
-# branch. Agora then opens the pull request, has it reviewed, and merges only after Sergio confirms.
+# from `claude setup-token`). Agora starts it for one approved task. Claude Code (Opus) works on
+# the task's branch in this GitHub runner with file and git tools, the project's tests, and a
+# headless Chrome that sees only the local preview (http://localhost:4173), so it can look at its
+# work. Its screenshots and its summary are kept as the "agora-worker" artifact: Agora shows them
+# in the room and gives them to the reviewer. This workflow pushes the branch; Agora opens the pull
+# request, has it reviewed, and merges only after Sergio confirms.
+#
+# The preview: a repo with an "agora:preview" npm script runs it (it must serve on port 4173);
+# any other repo is served as static files from its root by Python on port 4173.
 name: Agora worker
 run-name: "Agora task ${{ inputs.task_id }}"
 on:
@@ -19,7 +25,7 @@ concurrency:
 jobs:
   work:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 50
     steps:
       - name: Check the branch name
         env: { BRANCH: "${{ inputs.branch }}" }
@@ -32,7 +38,23 @@ jobs:
           git config user.name "Agora worker"
           git config user.email "agora-worker@users.noreply.github.com"
           if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then git switch "$BRANCH"; else git switch -c "$BRANCH"; fi
-      - uses: anthropics/claude-code-action@v1.0.252
+      - name: Start the local preview and the browser
+        run: |
+          mkdir -p /tmp/agora-shots
+          if [ -f package.json ] && node -e "process.exit(require('./package.json').scripts?.['agora:preview'] ? 0 : 1)"; then
+            npm ci > /tmp/agora-preview.log 2>&1 || true
+            nohup npm run agora:preview >> /tmp/agora-preview.log 2>&1 &
+          else
+            nohup python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/agora-preview.log 2>&1 &
+          fi
+          for i in $(seq 1 30); do curl -fsS -o /dev/null http://127.0.0.1:4173/ && break; sleep 1; done
+          # A headless Chrome (already on GitHub's machines) through Playwright's MCP server,
+          # allowed to open only the local preview. Screenshots land in /tmp/agora-shots.
+          cat > /tmp/agora-mcp.json <<'JSON'
+          {"mcpServers":{"browser":{"command":"npx","args":["-y","@playwright/mcp@0.0.83","--headless","--browser","chrome","--isolated","--allowed-origins","http://localhost:4173;http://127.0.0.1:4173","--output-dir","/tmp/agora-shots","--image-responses","allow"]}}}
+          JSON
+      - id: claude
+        uses: anthropics/claude-code-action@v1.0.252
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ github.token }}
@@ -40,8 +62,24 @@ jobs:
           allowed_bots: "agora-solutionsguru"
           prompt: ${{ inputs.prompt }}
           claude_args: >-
-            --max-turns 40
-            --allowedTools "Read,Write,Edit,MultiEdit,Glob,Grep,LS,Bash(git status:*),Bash(git diff:*),Bash(git add:*),Bash(git commit:*),Bash(git log:*),Bash(npm ci:*),Bash(npm test:*),Bash(npm run test:*),Bash(npm run build:*),Bash(node --test:*)"
+            --model claude-opus-5-5
+            --max-turns 80
+            --mcp-config /tmp/agora-mcp.json
+            --allowedTools "Read,Write,Edit,MultiEdit,Glob,Grep,LS,Bash(git status:*),Bash(git diff:*),Bash(git add:*),Bash(git commit:*),Bash(git log:*),Bash(npm ci:*),Bash(npm test:*),Bash(npm run test:*),Bash(npm run build:*),Bash(npm run lint:*),Bash(node --test:*),mcp__browser__browser_navigate,mcp__browser__browser_navigate_back,mcp__browser__browser_take_screenshot,mcp__browser__browser_snapshot,mcp__browser__browser_resize,mcp__browser__browser_click,mcp__browser__browser_hover,mcp__browser__browser_type,mcp__browser__browser_press_key,mcp__browser__browser_mouse_wheel,mcp__browser__browser_evaluate,mcp__browser__browser_wait_for,mcp__browser__browser_console_messages,mcp__browser__browser_emulate_media,mcp__browser__browser_tabs,mcp__browser__browser_close"
+      - name: Keep the worker's summary
+        if: always()
+        env: { EXEC: "${{ steps.claude.outputs.execution_file }}" }
+        run: |
+          if [ -n "$EXEC" ] && [ -f "$EXEC" ]; then
+            jq -r 'if type == "array" then (map(select(.type == "result")) | last | .result // "") else "" end' "$EXEC" > /tmp/agora-shots/summary.txt 2>/dev/null || true
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agora-worker
+          path: /tmp/agora-shots/
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Push the branch
         env: { BRANCH: "${{ inputs.branch }}" }
         run: |
