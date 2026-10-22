@@ -67,6 +67,7 @@ export function initParallax(win, doc) {
 
 /** What has changed on this page, newest first. Workers add a line here with each change. */
 export const changes = [
+  "A footer now says the page was built in Agora by people and agents working together.",
   "The hero text stays visible and the layers keep moving for as long as the hero is on screen.",
   "A real parallax with three layers: big shapes, stripes and the hero text move at their own speeds from the first pixel of scroll.",
   "A stronger parallax with a patterned hero, more content so the page scrolls, and the Anthropic colors.",
